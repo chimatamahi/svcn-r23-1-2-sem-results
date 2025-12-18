@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVCN Results Portal</title>
+    <style>
+        :root {
+            --primary-blue: #002147;
+            --accent-orange: #ffa500;
+            --light-bg: #f4f7f9;
+            --success-green: #28a745;
+            --cgpa-pink: #5dd81b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+
+        body { background-color: var(--light-bg); color: #333; line-height: 1.6; }
+
+        /* Container & Header */
+        .wrapper { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+        
+        .header-card {
+            background-color: #add8e6;
+            border: 2px solid #000;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo { width: 90px; height: 90px; margin-bottom: 10px; }
+
+        .college-name { font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 800; color: #000; margin: 5px 0; }
+        .details { font-size: 0.85rem; font-weight: 600; color: #222; margin-bottom: 2px; }
+        .exam-banner { 
+            margin-top: 20px; 
+            padding: 10px; 
+            background: rgba(0,0,139,0.1); 
+            color: #00008b; 
+            font-weight: bold; 
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        /* Login UI */
+        .login-section { margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .input-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+        
+        .input-field { 
+            padding: 12px 15px; 
+            width: 100%; 
+            max-width: 300px; 
+            border: 2px solid #cbd5e0; 
+            border-radius: 8px; 
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus { border-color: var(--primary-blue); outline: none; }
+
+        .btn { 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: transform 0.2s, opacity 0.2s; 
+            font-size: 0.9rem;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-submit { background-color: var(--accent-orange); color: white; }
+        .btn-back { background-color: #1e90ff; color: white; }
+        .btn-print { background-color: var(--primary-blue); color: white; margin-top: 20px; }
+
+        .error-box { 
+            color: #b91c1c; 
+            background: #fef2f2; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            display: none; 
+            margin-top: 15px; 
+            font-weight: bold; 
+            border: 1px solid #fee2e2;
+        }
+
+        /* Result Page UI */
+        #result-page { display: none; background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .student-meta { border-bottom: 2px solid #edf2f7; padding-bottom: 15px; margin-bottom: 20px; }
+        .student-name { font-size: 1.8rem; font-weight: 800; color: var(--primary-blue); }
+        .cgpa-badge { color: var(--cgpa-pink); font-size: 1.2rem; font-weight: bold; }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .stat-item { font-size: 0.85rem; font-weight: bold; }
+
+        .sgpa-strip { 
+            background: #fff5f5; 
+            color: #368624; 
+            padding: 12px; 
+            text-align: right; 
+            font-weight: 800; 
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-right: 5px solid #800000;
+        }
+
+        /* Table Responsive */
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background-color: var(--primary-blue); color: white; padding: 12px; text-align: center; font-size: 0.85rem; }
+        td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; font-size: 0.85rem; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        .status-pass { color: var(--success-green); font-weight: bold; }
+
+        /* Print Media Query */
+        @media print {
+            .no-print, .login-section, .btn-print, .btn-back { display: none !important; }
+            body { background: white; }
+            .wrapper { margin: 0; width: 100%; }
+            #result-page { display: block !important; box-shadow: none; padding: 0; }
+            .header-card { border: 1px solid #000; }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 600px) {
+            .header-card { padding: 15px; }
+            .student-name { font-size: 1.4rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header-card">
+        <!-- <img src="https://svcn.ac.in/assets/img/logo.png" alt="SVCN Logo" class="logo"> -->
+        <h1 class="college-name">SREE VENKATESWARA COLLEGE OF ENGINEERING</h1>
+        <p class="details">(An UGC Autonomous Institution)</p>
+        <p class="details">Accredited by NBA, NAAC 'A' Grade, ISO 9001:2015 Certified</p>
+        <p class="details">North Rajupalem, Kodavaluru, Nellore - 524316</p>
+        
+        <div id="home-content">
+            <div class="exam-banner">B.TECH I YEAR II SEMESTER (SVCN B.TECH R23) REGULAR EXAMS JUNE - 2025</div>
+            
+            <div class="login-section">
+                <div class="input-group">
+                    <input type="text" id="rollNo" class="input-field" placeholder="Enter Roll Number ">
+                    <button class="btn btn-submit" onclick="handleLogin()">View Results</button>
+                    <button class="btn btn-back">Reset</button>
+                </div>
+                <div id="error-msg" class="error-box">Invalid Credentials. Please check your Roll Number.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-page">
+        <div class="student-meta">
+            <h2 class="student-name">MOHAMMAD ZAID SHAIK</h2>
+            <div class="cgpa-badge">CGPA: 7.92</div>
+            <h2>SEMESTER: I-II RESULTS</h2>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">COURSE: B.TECH</div>
+            <div class="stat-item">BRANCH: AI&DS</div>
+            <div class="stat-item">TOTAL CREDITS: 19.5</div>
+            <div class="stat-item">PASSED COUNT: 10</div>
+            <div class="stat-item">FAILED COUNT: 0</div>
+            <div class="stat-item">EARNED CREDITS: 19.5</div>
+        </div>
+
+        <div class="sgpa-strip">SGPA : 8.28</div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Subject</th>
+                        <th>Int</th>
+                        <th>Ext</th>
+                        <th>Total</th>
+                        <th>Cred</th>
+                        <th>Grade</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>23BS1002</td><td>Chemistry</td><td>22</td><td>48</td><td>70</td><td>3</td><td>B</td><td class="status-pass">P</td></tr>
+                    <tr><td>23BS1004</td><td>Diff. Equations & Vector Calculus</td><td>18</td><td>32</td><td>50</td><td>3</td><td>D</td><td class="status-pass">P</td></tr>
+                    <tr><td>23BS1506</td><td>Chemistry Lab</td><td>28</td><td>60</td><td>88</td><td>1</td><td>A</td><td class="status-pass">P</td></tr>
+                    <tr><td>23CS2001</td><td>Data Structures</td><td>22</td><td>38</td><td>60</td><td>3</td><td>C</td><td class="status-pass">P</td></tr>
+                    <tr><td>23CS2502</td><td>Data Structures Lab</td><td>29</td><td>67</td><td>96</td><td>1.5</td><td>S</td><td class="status-pass">P</td></tr>
+                    <tr><td>23ES1001</td><td>Basic Civil & Mech. Engineering</td><td>20</td><td>52</td><td>72</td><td>3</td><td>B</td><td class="status-pass">P</td></tr>
+                    <tr><td>23ES1508</td><td>Engineering Workshop</td><td>24</td><td>58</td><td>82</td><td>1.5</td><td>A</td><td class="status-pass">P</td></tr>
+                    <tr><td>23HS1001</td><td>Communicative English</td><td>24</td><td>46</td><td>70</td><td>2</td><td>B</td><td class="status-pass">P</td></tr>
+                    <tr><td>23HS1502</td><td>Communicative English Lab</td><td>29</td><td>68</td><td>97</td><td>1</td><td>S</td><td class="status-pass">P</td></tr>
+                    <tr><td>23HS1503</td><td>Health & Wellness / Yoga</td><td>100</td><td>-</td><td>100</td><td>0.5</td><td>Y</td><td class="status-pass">P</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn btn-print" onclick="window.print()">Print to PDF</button>
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="location.reload()">Back to Search</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleLogin() {
+        const input = document.getElementById('rollNo').value.trim().toUpperCase();
+        const error = document.getElementById('error-msg');
+        const loginArea = document.getElementById('home-content');
+        const resultArea = document.getElementById('result-page');
+
+        // Credentials Validation
+        if (input === "24JNA30102") {
+            loginArea.style.display = 'none';
+            resultArea.style.display = 'block';
+            error.style.display = 'none';
+        } else {
+            error.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
